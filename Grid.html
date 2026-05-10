@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CSS Grid — Complete Visual Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,300&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* =============================================
+       ROOT VARIABLES & RESET
+    ============================================= */
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #111118;
+      --card:      #16161f;
+      --border:    #2a2a3a;
+      --accent:    #6c63ff;
+      --accent2:   #ff6584;
+      --accent3:   #43e97b;
+      --text:      #e8e8f0;
+      --muted:     #7070a0;
+      --code-bg:   #0d0d18;
+      --box-a:     #6c63ff;
+      --box-b:     #ff6584;
+      --box-c:     #43e97b;
+      --box-d:     #f7c948;
+      --box-e:     #38bdf8;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    /* === SCROLLBAR === */
+    ::-webkit-scrollbar 
+    { 
+      width: 10px;
+      
+    }
+    ::-webkit-scrollbar-track 
+    {
+      background: var(--bg);
+    }
+    ::-webkit-scrollbar-thumb 
+    {
+      background: var(--accent); 
+      border-radius: 5px;
+    }
+
+    /* ===== HEADER / HERO ===== */
+    header {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 4rem 2rem;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 50%, rgba(108,99,255,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 40%, rgba(255,101,132,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 50% 90%, rgba(67,233,123,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(108,99,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(108,99,255,0.06) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent);
+      background: rgba(108,99,255,0.12);
+      border: 1px solid rgba(108,99,255,0.3);
+      padding: 0.35rem 1rem;
+      border-radius: 999px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      display: inline-block;
+    }
+
+    header h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(5rem, 15vw, 13rem);
+      line-height: 0.9;
+      letter-spacing: 0.02em;
+      background: linear-gradient(135deg, #fff 30%, var(--accent) 70%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1.5rem;
+    }
+
+    header p {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 540px;
+      line-height: 1.8;
+    }
+
+    /* Hero grid demo — a small 3×2 grid of boxes */
+    .hero-grid-demo {
+      display: grid;
+      grid-template-columns: repeat(3, 48px);
+      grid-template-rows: repeat(2, 48px);
+      gap: 0.5rem;
+      margin-top: 3rem;
+      animation: float 3s ease infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-30px); }
+    }
+
+    .hero-box {
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    /* Wide box spanning 2 columns in hero */
+    .hero-box.span2 {
+      grid-column: span 2;
+      width: 100%;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.1; }
+      50%       { opacity: 1; }
+    }
+
+    .scroll-hint .arrow {
+      width: 2px;
+      height: 50px;
+      background: linear-gradient(to bottom, var(--accent), transparent);
+    }
+
+    /* ====  NAV (TOC) ==== */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,10,15,0.1);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      overflow-x: auto;
+    }
+
+    .nav-inner {
+      display: flex;
+      gap: 0;
+      max-width: 1100px;
+      margin: 0 auto;
+      white-space: nowrap;
+    }
+
+    nav a {
+      display: inline-block;
+      padding: 1rem 1.1rem;
+      font-size: 0.98rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s, border-bottom-color 0.2s;
+      border-bottom: 2px solid transparent;
+      border-radius: 10px;
+      font-weight: 900;
+      margin-bottom: 3px;
+    }
+
+    nav a:active {
+      background-color: #e8e8f034;
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* =============================================
+       MAIN LAYOUT
+    ============================================= */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 4rem 2rem 8rem;
+    }
+
+    /* =============================================
+       SECTION STYLES
+    ============================================= */
+    .section {
+      margin-bottom: 7rem;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .section-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .section h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      letter-spacing: 0.03em;
+      color: #fff;
+      margin-bottom: 0.75rem;
+      line-height: 1;
+    }
+
+    .section > p {
+      color: var(--muted);
+      max-width: 640px;
+      margin-bottom: 2.5rem;
+      font-size: 1rem;
+    }
+
+    /* =============================================
+       INTRO CONCEPT BLOCK
+    ============================================= */
+    .concept-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .concept-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .concept-card:active {
+      border-color: var(--accent);
+      transform: translateY(-3px);
+      box-shadow: 0 0 10px 1px var(--box-a);
+    }
+
+    .concept-card .icon {
+      font-size: 1.6rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .concept-card h3 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--accent);
+      margin-bottom: 0.4rem;
+    }
+
+    .concept-card p {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* =============================================
+       DEMO CARD
+    ============================================= */
+    .demo-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .demo-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .demo-label span {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .demo-label code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--accent3);
+      background: rgba(67,233,123,0.1);
+      padding: 0.2rem 0.7rem;
+      border-radius: 6px;
+    }
+
+    .demo-visual {
+      padding: 2rem;
+    }
+
+    /* =============================================
+       GRID CONTAINERS (demo areas)
+    ============================================= */
+    .grid-container {
+      min-height: 100px;
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      display: grid;
+      gap: 0.6rem;
+      background: rgba(108,99,255,0.03);
+      position: relative;
+    }
+
+    .grid-container::before {
+      content: 'grid container';
+      position: absolute;
+      top: -11px;
+      left: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      background: var(--card);
+      padding: 0 0.5rem;
+    }
+
+    .b {
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.9);
+      padding: 0.7rem 1rem;
+      min-width: 44px;
+      min-height: 44px;
+      transition: transform 0.2s;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .b:active { transform: scale(1.05); }
+
+    .b1 { background: var(--box-a); }
+    .b2 { background: var(--box-b); }
+    .b3 { background: var(--box-c); }
+    .b4 { background: var(--box-d); color: #111; }
+    .b5 { background: var(--box-e); color: #111; }
+    .b6 { background: #c084fc; }
+    .b7 { background: #fb923c; color: #111; }
+
+    /* =============================================
+       CODE BLOCK
+    ============================================= */
+    .code-block {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      overflow-x: auto;
+      margin-top: 1.5rem;
+    }
+
+    .code-block pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.83rem;
+      line-height: 1.8;
+      color: var(--text);
+      white-space: pre;
+    }
+
+    .kw  { color: #c678dd; }
+    .prop{ color: #61afef; }
+    .val { color: #98c379; }
+    .cmt { color: #5c6370; font-style: italic; }
+    .sel { color: #e06c75; }
+    .str { color: var(--box-d); }
+
+    /* =============================================
+       PROPERTY TABLE
+    ============================================= */
+    .prop-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1.5rem;
+      font-size: 0.88rem;
+    }
+
+    .prop-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .prop-table td {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid rgba(42,42,58,0.5);
+      color: var(--muted);
+      vertical-align: top;
+    }
+
+    .prop-table td:first-child {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent3);
+      font-size: 0.82rem;
+      white-space: nowrap;
+    }
+
+    .prop-table tr:active td { background: rgba(108,99,255,0.04); }
+
+    /* =============================================
+       MULTI-DEMO GRID
+    ============================================= */
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.2rem;
+      margin-bottom: 2rem;
+    }
+
+    /* =============================================
+       AXIS VISUAL (Grid version — 2D diagram)
+    ============================================= */
+    .axis-diagram {
+      position: relative;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      margin-bottom: 2.5rem;
+      overflow: hidden;
+    }
+
+    /* Horizontal track lines */
+    .axis-diagram .row-axis {
+      position: absolute;
+      top: 33%;
+      left: 5%;
+      right: 5%;
+      height: 2px;
+      background: linear-gradient(to right, var(--accent), var(--accent2));
+    }
+
+    .axis-diagram .row-axis-2 {
+      position: absolute;
+      top: 66%;
+      left: 5%;
+      right: 5%;
+      height: 2px;
+      background: linear-gradient(to right, var(--accent), var(--accent2));
+      opacity: 0.45;
+    }
+
+    /* Vertical track lines */
+    .axis-diagram .col-axis {
+      position: absolute;
+      left: 33%;
+      top: 5%;
+      bottom: 5%;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent3), var(--box-d));
+    }
+
+    .axis-diagram .col-axis-2 {
+      position: absolute;
+      left: 66%;
+      top: 5%;
+      bottom: 5%;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent3), var(--box-d));
+      opacity: 0.45;
+    }
+
+    .axis-label {
+      position: absolute;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      color: #fff;
+    }
+
+    .axis-label.row-lbl  { background: var(--accent);  top: calc(33% - 1.3rem); right: 4%; }
+    .axis-label.col-lbl  { background: var(--accent3); color: #111; bottom: 3%; left: calc(33% + 0.8rem); }
+
+    .axis-items {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      height: 120px;
+    }
+
+    /* =============================================
+       CHEAT SHEET
+    ============================================= */
+    .cheat-sheet {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .cheat-group {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+    }
+
+    .cheat-group h3 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cheat-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.6rem;
+      font-size: 0.85rem;
+    }
+
+    .cheat-row .cheat-prop {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent3);
+      min-width: 140px;
+      font-size: 0.78rem;
+    }
+
+    .cheat-row .cheat-desc { color: var(--muted); }
+
+    /* =============================================
+       FOOTER
+    ============================================= */
+    footer {
+      text-align: center;
+      padding: 3rem 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    footer span { color: var(--accent2); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      main {
+        padding: 3rem 1.2rem 5rem;
+      }
+      .demo-visual {
+        padding: 1.2rem;
+      }
+      .grid-container {
+        padding: 0.7rem;
+        gap: 0.4rem;
+      }
+      .b {
+        padding: 0.5rem 0.7rem;
+        font-size: 0.7rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =============================================
+       HERO
+  ============================================= -->
+  <header>
+    <div class="grid-bg"></div>
+    <div class="hero-badge">CSS Layout Module</div>
+    <h1>CSS GRID</h1>
+    <p>The complete visual guide to mastering CSS Grid Layout — every property, explained with live examples.</p>
+
+    <!-- Mini grid demo in hero -->
+    <div class="hero-grid-demo">
+      <div class="hero-box b1 span2">header</div>
+      <div class="hero-box b5">3</div>
+      <div class="hero-box b2">4</div>
+      <div class="hero-box b3">5</div>
+      <div class="hero-box b4">6</div>
+    </div>
+
+    <div class="scroll-hint">
+      <span>scroll to learn</span>
+      <div class="arrow"></div>
+    </div>
+  </header>
+
+  <!-- ==== NAV === -->
+  <nav>
+    <div class="nav-inner">
+      <a href="#intro">01 — Intro</a>
+      <a href="#template-columns">02 — Columns</a>
+      <a href="#template-rows">03 — Rows</a>
+      <a href="#gap">04 — Gap</a>
+      <a href="#placement">05 — Placement</a>
+      <a href="#template-areas">06 — Areas</a>
+      <a href="#justify-align-items">07 — Item Align</a>
+      <a href="#justify-align-content">08 — Grid Align</a>
+      <a href="#auto-flow">09 — Auto Flow</a>
+      <a href="#functions">10 — repeat/fr/minmax</a>
+      <a href="#cheatsheet">11 — Cheat Sheet</a>
+    </div>
+  </nav>
+
+  <!-- =============================================
+       MAIN
+  ============================================= -->
+  <main>
+
+    <!-- 01 INTRO -->
+    <section class="section" id="intro">
+      <div class="section-num">01 / Introduction</div>
+      <h2>What Is CSS Grid?</h2>
+      <p>CSS Grid is a <strong>two-dimensional</strong> layout system. You set a container to <code style="color:var(--accent3);background:rgba(67,233,123,0.1);padding:0.1rem 0.5rem;border-radius:4px;font-family:'JetBrains Mono',monospace">display: grid</code> and its children become <strong>grid items</strong> placed into rows <em>and</em> columns simultaneously — unlike Flexbox which works in one axis at a time.</p>
+
+      <div class="concept-grid">
+        <div class="concept-card">
+          <div class="icon">🏛️</div>
+          <h3>Grid Container</h3>
+          <p>The parent element. Apply <code style="font-family:'JetBrains Mono',monospace;color:var(--accent3)">display: grid</code> here to turn direct children into grid items.</p>
+        </div>
+        <div class="concept-card">
+          <div class="icon">🧩</div>
+          <h3>Grid Items</h3>
+          <p>Direct children of the grid container. They sit inside cells formed by the intersection of rows and columns.</p>
+        </div>
+        <div class="concept-card">
+          <div class="icon">➡️</div>
+          <h3>Grid Tracks</h3>
+          <p>The rows and columns you define. Each track is the space between two adjacent grid lines — either a row track or a column track.</p>
+        </div>
+        <div class="concept-card">
+          <div class="icon">⬛</div>
+          <h3>Grid Cell</h3>
+          <p>The intersection of one row track and one column track. It's the smallest unit of a grid — like a table cell.</p>
+        </div>
+        <div class="concept-card">
+          <div class="icon">🔲</div>
+          <h3>Grid Area</h3>
+          <p>One or more cells grouped together. Items can span multiple cells using <code style="font-family:'JetBrains Mono',monospace;color:var(--accent3)">grid-column</code> and <code style="font-family:'JetBrains Mono',monospace;color:var(--accent3)">grid-row</code>.</p>
+        </div>
+        <div class="concept-card">
+          <div class="icon">📐</div>
+          <h3>Grid Lines</h3>
+          <p>The dividing lines that make up the grid structure. They are numbered starting from 1. You can place items by referencing these line numbers.</p>
+        </div>
+      </div>
+
+      <!-- 2D Axis Diagram -->
+      <div class="axis-diagram">
+        <div class="row-axis"></div>
+        <div class="row-axis-2"></div>
+        <div class="col-axis"></div>
+        <div class="col-axis-2"></div>
+        <div class="axis-label row-lbl">→ Column Tracks</div>
+        <div class="axis-label col-lbl">↓ Row Tracks</div>
+        <div class="axis-items">
+          <div class="b b1">A</div>
+          <div class="b b2">B</div>
+          <div class="b b3">C</div>
+          <div class="b b4">D</div>
+          <div class="b b5">E</div>
+          <div class="b b6">F</div>
+        </div>
+      </div>
+
+      <div class="code-block"><pre>
+<span class="cmt">/* Turn any element into a grid container */</span>
+<span class="sel">.container</span> {
+  <span class="prop">display</span>: <span class="val">grid</span>;
+  <span class="cmt">/* All direct children are now grid items */</span>
+}
+
+<span class="cmt">/* Grid vs Flexbox — key difference */</span>
+<span class="cmt">/* Flexbox → 1D (row OR column at a time) */</span>
+<span class="cmt">/* Grid    → 2D (rows AND columns together) */</span></pre></div>
+    </section>
+
+    <!-- 02 GRID-TEMPLATE-COLUMNS -->
+    <section class="section" id="template-columns">
+      <div class="section-num">02 / Property</div>
+      <h2>grid-template-columns</h2>
+      <p>Defines the <strong>number and width</strong> of columns in the grid. Each value represents one column. You can use px, %, em, <code style="color:var(--accent3);background:rgba(67,233,123,0.1);padding:0.1rem 0.5rem;border-radius:4px;font-family:'JetBrains Mono',monospace">fr</code>, or auto.</p>
+
+      <div class="demo-grid">
+        <div class="demo-card">
+          <div class="demo-label">
+            <span>Three equal columns</span>
+            <code>repeat(3, 1fr)</code>
+          </div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: repeat(3, 1fr);">
+              <div class="b b1">1</div>
+              <div class="b b2">2</div>
+              <div class="b b3">3</div>
+              <div class="b b4">4</div>
+              <div class="b b5">5</div>
+              <div class="b b6">6</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label">
+            <span>Fixed + flexible</span>
+            <code>200px 1fr 1fr</code>
+          </div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: 200px 1fr 1fr;">
+              <div class="b b1">200px</div>
+              <div class="b b2">1fr</div>
+              <div class="b b3">1fr</div>
+              <div class="b b4">200px</div>
+              <div class="b b5">1fr</div>
+              <div class="b b6">1fr</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label">
+            <span>Unequal proportions</span>
+            <code>1fr 2fr 1fr</code>
+          </div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: 1fr 2fr 1fr;">
+              <div class="b b1">1fr</div>
+              <div class="b b2">2fr</div>
+              <div class="b b3">1fr</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label">
+            <span>Auto-fit columns</span>
+            <code>auto auto auto auto</code>
+          </div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: auto auto auto auto;">
+              <div class="b b1">auto</div>
+              <div class="b b2">auto</div>
+              <div class="b b3">auto</div>
+              <div class="b b4">auto</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block"><pre>
+<span class="sel">.container</span> { <span class="prop">display</span>: <span class="val">grid</span>; }
+
+<span class="cmt">/* Define columns by listing their widths */</span>
+<span class="prop">grid-template-columns</span>: <span class="val">200px 200px 200px</span>;   <span class="cmt">/* 3 fixed columns         */</span>
+<span class="prop">grid-template-columns</span>: <span class="val">1fr 1fr 1fr</span>;         <span class="cmt">/* 3 equal flexible cols   */</span>
+<span class="prop">grid-template-columns</span>: <span class="val">repeat(3, 1fr)</span>;      <span class="cmt">/* same, shorter syntax    */</span>
+<span class="prop">grid-template-columns</span>: <span class="val">200px 1fr 1fr</span>;       <span class="cmt">/* sidebar + 2 flex cols   */</span>
+<span class="prop">grid-template-columns</span>: <span class="val">1fr 2fr 1fr</span>;         <span class="cmt">/* wide center column      */</span>
+<span class="prop">grid-template-columns</span>: <span class="val">auto auto auto</span>;      <span class="cmt">/* fit to content          */</span></pre></div>
+    </section>
+
+    <!-- 03 GRID-TEMPLATE-ROWS -->
+    <section class="section" id="template-rows">
+      <div class="section-num">03 / Property</div>
+      <h2>grid-template-rows</h2>
+      <p>Defines the <strong>height of each row</strong>. Works just like <code style="color:var(--accent3);background:rgba(67,233,123,0.1);padding:0.1rem 0.5rem;border-radius:4px;font-family:'JetBrains Mono',monospace">grid-template-columns</code> but for the vertical axis. Rows without an explicit definition get their height from content.</p>
+
+      <div class="demo-grid">
+        <div class="demo-card">
+          <div class="demo-label">
+            <span>Fixed row heights</span>
+            <code>80px 120px 60px</code>
+          </div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: repeat(3, 1fr); grid-template-rows: 80px 120px 60px;">
+              <div class="b b1">80px</div>
+              <div class="b b2">80px</div>
+              <div class="b b3">80px</div>
+              <div class="b b4">120px</div>
+              <div class="b b5">120px</div>
+              <div class="b b6">120px</div>
+              <div class="b b1">60px</div>
+              <div class="b b2">60px</div>
+              <div class="b b3">60px</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label">
+            <span>Flexible row heights</span>
+            <code>1fr 2fr 1fr</code>
+          </div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: repeat(3,1fr); grid-template-rows: 1fr 2fr 1fr; height: 260px;">
+              <div class="b b5">1fr</div>
+              <div class="b b5">1fr</div>
+              <div class="b b5">1fr</div>
+              <div class="b b2">2fr</div>
+              <div class="b b2">2fr</div>
+              <div class="b b2">2fr</div>
+              <div class="b b5">1fr</div>
+              <div class="b b5">1fr</div>
+              <div class="b b5">1fr</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label">
+            <span>Auto height (default)</span>
+            <code>auto auto</code>
+          </div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: repeat(3,1fr); grid-template-rows: auto auto;">
+              <div class="b b3" style="padding:0.5rem">short</div>
+              <div class="b b3" style="padding:0.5rem">short</div>
+              <div class="b b3" style="padding:0.5rem">short</div>
+              <div class="b b4" style="padding:1.5rem 0.5rem">taller content</div>
+              <div class="b b4" style="padding:1.5rem 0.5rem">taller content</div>
+              <div class="b b4" style="padding:1.5rem 0.5rem">taller content</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block"><pre>
+<span class="sel">.container</span> {
+  <span class="prop">display</span>: <span class="val">grid</span>;
+  <span class="prop">grid-template-columns</span>: <span class="val">repeat(3, 1fr)</span>;
+}
+
+<span class="cmt">/* Define row heights */</span>
+<span class="prop">grid-template-rows</span>: <span class="val">80px 120px 60px</span>;   <span class="cmt">/* fixed heights per row   */</span>
+<span class="prop">grid-template-rows</span>: <span class="val">1fr 2fr</span>;            <span class="cmt">/* proportional heights    */</span>
+<span class="prop">grid-template-rows</span>: <span class="val">auto</span>;               <span class="cmt">/* height = content size   */</span>
+<span class="prop">grid-template-rows</span>: <span class="val">repeat(3, 100px)</span>;  <span class="cmt">/* 3 rows of 100px each    */</span>
+
+<span class="cmt">/* Shorthand: rows / columns */</span>
+<span class="prop">grid-template</span>: <span class="val">80px 120px / repeat(3, 1fr)</span>;</pre></div>
+    </section>
+
+    <!-- 04 GAP -->
+    <section class="section" id="gap">
+      <div class="section-num">04 / Property</div>
+      <h2>gap</h2>
+      <p>Sets the <strong>spacing between grid cells</strong> — both rows and columns. No more adding margin to every item. Works identically to Flexbox gap.</p>
+
+      <div class="demo-grid">
+        <div class="demo-card">
+          <div class="demo-label"><span></span><code>gap: 8px</code></div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: repeat(3,1fr); gap: 8px;">
+              <div class="b b1">1</div><div class="b b2">2</div><div class="b b3">3</div>
+              <div class="b b4">4</div><div class="b b5">5</div><div class="b b6">6</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label"><span></span><code>gap: 24px</code></div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: repeat(3,1fr); gap: 24px;">
+              <div class="b b1">1</div><div class="b b2">2</div><div class="b b3">3</div>
+              <div class="b b4">4</div><div class="b b5">5</div><div class="b b6">6</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label"><span>Different row & column gaps</span><code>row-gap: 8px; column-gap: 32px</code></div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: repeat(3,1fr); row-gap: 8px; column-gap: 32px;">
+              <div class="b b1">1</div><div class="b b2">2</div><div class="b b3">3</div>
+              <div class="b b4">4</div><div class="b b5">5</div><div class="b b6">6</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block"><pre>
+<span class="prop">gap</span>: <span class="val">16px</span>;              <span class="cmt">/* equal row + column gap              */</span>
+<span class="prop">gap</span>: <span class="val">8px 24px</span>;          <span class="cmt">/* row-gap 8px, column-gap 24px        */</span>
+<span class="prop">row-gap</span>: <span class="val">8px</span>;
+<span class="prop">column-gap</span>: <span class="val">24px</span>;
+
+<span class="cmt">/* Works in both Grid and Flexbox */</span></pre></div>
+    </section>
+
+    <!-- 05 GRID-COLUMN & GRID-ROW (Placement) -->
+    <section class="section" id="placement">
+      <div class="section-num">05 / Item Properties</div>
+      <h2>grid-column · grid-row</h2>
+      <p>These are set on <strong>grid items</strong>, not the container. They control exactly where an item starts and ends by referencing <strong>grid line numbers</strong>, and can make items span multiple cells.</p>
+
+      <table class="prop-table">
+        <tr>
+          <th>Property</th>
+          <th>What it does</th>
+          <th>Example</th>
+        </tr>
+        <tr>
+          <td>grid-column</td>
+          <td>Places the item horizontally. Shorthand for <code style="font-family:'JetBrains Mono',monospace;color:var(--accent3)">grid-column-start</code> / <code style="font-family:'JetBrains Mono',monospace;color:var(--accent3)">grid-column-end</code>.</td>
+          <td><code style="font-family:'JetBrains Mono',monospace;color:var(--accent3)">grid-column: 1 / 3</code></td>
+        </tr>
+        <tr>
+          <td>grid-row</td>
+          <td>Places the item vertically. Shorthand for <code style="font-family:'JetBrains Mono',monospace;color:var(--accent3)">grid-row-start</code> / <code style="font-family:'JetBrains Mono',monospace;color:var(--accent3)">grid-row-end</code>.</td>
+          <td><code style="font-family:'JetBrains Mono',monospace;color:var(--accent3)">grid-row: 2 / 4</code></td>
+        </tr>
+        <tr>
+          <td>span keyword</td>
+          <td>Makes an item span N tracks without needing to know the exact end line number.</td>
+          <td><code style="font-family:'JetBrains Mono',monospace;color:var(--accent3)">grid-column: span 2</code></td>
+        </tr>
+      </table>
+
+      <div class="demo-grid" style="margin-top: 2rem;">
+        <div class="demo-card">
+          <div class="demo-label"><span>Item spans 2 columns</span><code>grid-column: 1 / 3</code></div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: repeat(3, 1fr); gap: 0.6rem;">
+              <div class="b b1" style="grid-column: 1 / 3;">col 1–3</div>
+              <div class="b b2">3</div>
+              <div class="b b3">4</div>
+              <div class="b b4">5</div>
+              <div class="b b5">6</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label"><span>Item spans all 3 columns</span><code>grid-column: 1 / -1</code></div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: repeat(3, 1fr); gap: 0.6rem;">
+              <div class="b b2">1</div>
+              <div class="b b3">2</div>
+              <div class="b b4">3</div>
+              <div class="b b1" style="grid-column: 1 / -1;">full width (1 / -1)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label"><span>Item spans 2 rows</span><code>grid-row: span 2</code></div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: repeat(3, 1fr); gap: 0.6rem;">
+              <div class="b b5" style="grid-row: span 2;">span 2 rows</div>
+              <div class="b b2">2</div>
+              <div class="b b3">3</div>
+              <div class="b b4">4</div>
+              <div class="b b6">5</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label"><span>Precise placement</span><code>grid-column: 2 / 4; grid-row: 1 / 3</code></div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: repeat(3, 1fr); grid-template-rows: 60px 60px; gap: 0.6rem;">
+              <div class="b b3">A</div>
+              <div class="b b1" style="grid-column: 2 / 4; grid-row: 1 / 3;">col 2–4, row 1–3</div>
+              <div class="b b4">C</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block"><pre>
+<span class="cmt">/* Set on grid items — uses line numbers */</span>
+<span class="sel">.item</span> {
+  <span class="prop">grid-column</span>: <span class="val">1 / 3</span>;    <span class="cmt">/* from line 1 to line 3 (spans 2 cols)  */</span>
+  <span class="prop">grid-column</span>: <span class="val">1 / -1</span>;   <span class="cmt">/* from line 1 to last line (full width) */</span>
+  <span class="prop">grid-column</span>: <span class="val">span 2</span>;   <span class="cmt">/* span 2 columns from wherever it is   */</span>
+
+  <span class="prop">grid-row</span>: <span class="val">1 / 3</span>;       <span class="cmt">/* span 2 rows                           */</span>
+  <span class="prop">grid-row</span>: <span class="val">span 2</span>;      <span class="cmt">/* same, using span keyword              */</span>
+}
+
+<span class="cmt">/* Longhand versions */</span>
+<span class="prop">grid-column-start</span>: <span class="val">1</span>;
+<span class="prop">grid-column-end</span>:   <span class="val">3</span>;</pre></div>
+    </section>
+
+    <!-- 06 GRID-TEMPLATE-AREAS -->
+    <section class="section" id="template-areas">
+      <div class="section-num">06 / Property</div>
+      <h2>grid-template-areas</h2>
+      <p>Name regions of your grid using <strong>ASCII-art strings</strong>. Each string is a row; each word is a cell's name. Items are then placed by setting <code style="color:var(--accent3);background:rgba(67,233,123,0.1);padding:0.1rem 0.5rem;border-radius:4px;font-family:'JetBrains Mono',monospace">grid-area</code> to the matching name. Use <code style="color:var(--accent3);background:rgba(67,233,123,0.1);padding:0.1rem 0.5rem;border-radius:4px;font-family:'JetBrains Mono',monospace">.</code> for empty cells.</p>
+
+      <div class="demo-card">
+        <div class="demo-label">
+          <span>Classic page layout: header, sidebar, main, footer</span>
+          <code>grid-template-areas</code>
+        </div>
+        <div class="demo-visual">
+          <div class="grid-container" style="
+            grid-template-columns: 160px 1fr;
+            grid-template-rows: 60px 160px 50px;
+            grid-template-areas:
+              'header  header'
+              'sidebar main'
+              'footer  footer';
+            gap: 0.6rem;
+          ">
+            <div class="b b1" style="grid-area: header;">header</div>
+            <div class="b b5" style="grid-area: sidebar;">sidebar</div>
+            <div class="b b3" style="grid-area: main;">main</div>
+            <div class="b b4" style="grid-area: footer;">footer</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-label">
+          <span>Magazine layout with empty cell (dot)</span>
+          <code>. = empty cell</code>
+        </div>
+        <div class="demo-visual">
+          <div class="grid-container" style="
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 80px 80px;
+            grid-template-areas:
+              'hero hero aside'
+              '.    body aside';
+            gap: 0.6rem;
+          ">
+            <div class="b b2" style="grid-area: hero;">hero</div>
+            <div class="b b5" style="grid-area: aside;">aside</div>
+            <div class="b b3" style="grid-area: body;">body</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block"><pre>
+<span class="sel">.container</span> {
+  <span class="prop">display</span>: <span class="val">grid</span>;
+  <span class="prop">grid-template-columns</span>: <span class="val">160px 1fr</span>;
+  <span class="prop">grid-template-rows</span>: <span class="val">60px 1fr 50px</span>;
+  <span class="prop">grid-template-areas</span>:
+    <span class="str">"header  header"</span>
+    <span class="str">"sidebar main"</span>
+    <span class="str">"footer  footer"</span>;
+}
+
+<span class="cmt">/* Place items by name — no line numbers needed! */</span>
+<span class="sel">.header</span>  { <span class="prop">grid-area</span>: <span class="val">header</span>;  }
+<span class="sel">.sidebar</span> { <span class="prop">grid-area</span>: <span class="val">sidebar</span>; }
+<span class="sel">.main</span>    { <span class="prop">grid-area</span>: <span class="val">main</span>;    }
+<span class="sel">.footer</span>  { <span class="prop">grid-area</span>: <span class="val">footer</span>;  }
+
+<span class="cmt">/* Use a dot ( . ) to leave a cell empty */</span>
+<span class="prop">grid-template-areas</span>:
+  <span class="str">"hero hero aside"</span>
+  <span class="str">".    body aside"</span>; <span class="cmt">/* dot = empty cell */</span></pre></div>
+    </section>
+
+    <!-- 07 JUSTIFY-ITEMS & ALIGN-ITEMS -->
+    <section class="section" id="justify-align-items">
+      <div class="section-num">07 / Container Properties</div>
+      <h2>justify-items · align-items</h2>
+      <p>Control how grid items are aligned <strong>within their own cell</strong>. <code style="color:var(--accent3);background:rgba(67,233,123,0.1);padding:0.1rem 0.5rem;border-radius:4px;font-family:'JetBrains Mono',monospace">justify-items</code> aligns horizontally (inline axis), <code style="color:var(--accent3);background:rgba(67,233,123,0.1);padding:0.1rem 0.5rem;border-radius:4px;font-family:'JetBrains Mono',monospace">align-items</code> aligns vertically (block axis). Use <code style="color:var(--accent3);background:rgba(67,233,123,0.1);padding:0.1rem 0.5rem;border-radius:4px;font-family:'JetBrains Mono',monospace">place-items</code> as shorthand for both.</p>
+
+      <div class="demo-grid">
+        <div class="demo-card">
+          <div class="demo-label"><span>Items start of cell</span><code>justify-items: start</code></div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns:repeat(3,1fr); gap:0.6rem; justify-items:start; height:160px; align-items:center;">
+              <div class="b b1">A</div>
+              <div class="b b2">B</div>
+              <div class="b b3">C</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label"><span>Items centered in cell</span><code>justify-items: center</code></div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns:repeat(3,1fr); gap:0.6rem; justify-items:center; height:160px; align-items:center;">
+              <div class="b b1">A</div>
+              <div class="b b2">B</div>
+              <div class="b b3">C</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label"><span>Items at end of cell</span><code>justify-items: end</code></div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns:repeat(3,1fr); gap:0.6rem; justify-items:end; height:160px; align-items:center;">
+              <div class="b b1">A</div>
+              <div class="b b2">B</div>
+              <div class="b b3">C</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label"><span>Perfect center (both axes)</span><code>place-items: center</code></div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns:repeat(3,1fr); gap:0.6rem; place-items:center; height:160px;">
+              <div class="b b4">A</div>
+              <div class="b b5">B</div>
+              <div class="b b6">C</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label"><span>Top of cell</span><code>align-items: start</code></div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns:repeat(3,1fr); gap:0.6rem; align-items:start; height:160px;">
+              <div class="b b2">A</div>
+              <div class="b b3">B</div>
+              <div class="b b1">C</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label"><span>Stretch (default)</span><code>align-items: stretch</code></div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns:repeat(3,1fr); gap:0.6rem; align-items:stretch; height:160px;">
+              <div class="b b5">A</div>
+              <div class="b b6">B</div>
+              <div class="b b7">C</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block"><pre>
+<span class="cmt">/* Set on the CONTAINER — applies to all items */</span>
+<span class="sel">.container</span> {
+  <span class="prop">justify-items</span>: <span class="val">stretch</span>;   <span class="cmt">/* fill cell width (default)             */</span>
+  <span class="prop">justify-items</span>: <span class="val">start</span>;     <span class="cmt">/* left edge of cell                     */</span>
+  <span class="prop">justify-items</span>: <span class="val">end</span>;       <span class="cmt">/* right edge of cell                    */</span>
+  <span class="prop">justify-items</span>: <span class="val">center</span>;   <span class="cmt">/* center horizontally in cell           */</span>
+
+  <span class="prop">align-items</span>: <span class="val">stretch</span>;    <span class="cmt">/* fill cell height (default)            */</span>
+  <span class="prop">align-items</span>: <span class="val">start</span>;      <span class="cmt">/* top of cell                           */</span>
+  <span class="prop">align-items</span>: <span class="val">end</span>;        <span class="cmt">/* bottom of cell                        */</span>
+  <span class="prop">align-items</span>: <span class="val">center</span>;    <span class="cmt">/* center vertically in cell             */</span>
+}
+
+<span class="cmt">/* Shorthand: place-items = align-items + justify-items */</span>
+<span class="prop">place-items</span>: <span class="val">center</span>;          <span class="cmt">/* center both axes                      */</span>
+<span class="prop">place-items</span>: <span class="val">start end</span>;       <span class="cmt">/* align-items: start; justify-items: end */</span>
+
+<span class="cmt">/* Override for a single item with justify-self / align-self */</span>
+<span class="sel">.special-item</span> {
+  <span class="prop">justify-self</span>: <span class="val">center</span>;
+  <span class="prop">align-self</span>:   <span class="val">end</span>;
+}</pre></div>
+    </section>
+
+    <!-- 08 JUSTIFY-CONTENT & ALIGN-CONTENT -->
+    <section class="section" id="justify-align-content">
+      <div class="section-num">08 / Container Properties</div>
+      <h2>justify-content · align-content</h2>
+      <p>When the <strong>total grid is smaller than the container</strong>, these properties control where the entire grid sits inside the container. Think of it as moving the grid as a whole — not individual items within their cells.</p>
+
+      <div class="demo-grid">
+        <div class="demo-card">
+          <div class="demo-label"><span>Grid at the start</span><code>justify-content: start</code></div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns:repeat(3,80px); gap:0.5rem; justify-content:start; min-height:100px;">
+              <div class="b b1">1</div><div class="b b2">2</div><div class="b b3">3</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label"><span>Grid centered</span><code>justify-content: center</code></div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns:repeat(3,80px); gap:0.5rem; justify-content:center; min-height:100px;">
+              <div class="b b1">1</div><div class="b b2">2</div><div class="b b3">3</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label"><span>Grid at the end</span><code>justify-content: end</code></div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns:repeat(3,80px); gap:0.5rem; justify-content:end; min-height:100px;">
+              <div class="b b1">1</div><div class="b b2">2</div><div class="b b3">3</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label"><span>Space between columns</span><code>justify-content: space-between</code></div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns:repeat(3,80px); gap:0; justify-content:space-between; min-height:100px;">
+              <div class="b b4">1</div><div class="b b5">2</div><div class="b b6">3</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label"><span>Rows stacked to top</span><code>align-content: start</code></div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns:repeat(3,1fr); gap:0.5rem; align-content:start; height:200px;">
+              <div class="b b2">1</div><div class="b b3">2</div><div class="b b4">3</div>
+              <div class="b b5">4</div><div class="b b6">5</div><div class="b b1">6</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label"><span>Rows spread out</span><code>align-content: space-between</code></div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns:repeat(3,1fr); gap:0; align-content:space-between; height:200px;">
+              <div class="b b2">1</div><div class="b b3">2</div><div class="b b4">3</div>
+              <div class="b b5">4</div><div class="b b6">5</div><div class="b b1">6</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block"><pre>
+<span class="cmt">/* Only visible when grid is smaller than the container */</span>
+<span class="prop">justify-content</span>: <span class="val">start</span>;          <span class="cmt">/* grid at left edge (default)          */</span>
+<span class="prop">justify-content</span>: <span class="val">end</span>;            <span class="cmt">/* grid at right edge                   */</span>
+<span class="prop">justify-content</span>: <span class="val">center</span>;         <span class="cmt">/* grid centered horizontally           */</span>
+<span class="prop">justify-content</span>: <span class="val">space-between</span>;  <span class="cmt">/* max space between column tracks      */</span>
+<span class="prop">justify-content</span>: <span class="val">space-around</span>;   <span class="cmt">/* equal space around column tracks     */</span>
+<span class="prop">justify-content</span>: <span class="val">space-evenly</span>;   <span class="cmt">/* equal space between + edges          */</span>
+
+<span class="prop">align-content</span>: <span class="val">start</span>;            <span class="cmt">/* rows packed to top                   */</span>
+<span class="prop">align-content</span>: <span class="val">end</span>;              <span class="cmt">/* rows packed to bottom                */</span>
+<span class="prop">align-content</span>: <span class="val">center</span>;           <span class="cmt">/* rows centered vertically             */</span>
+<span class="prop">align-content</span>: <span class="val">space-between</span>;    <span class="cmt">/* max space between row tracks         */</span>
+
+<span class="cmt">/* Shorthand: place-content = align-content + justify-content */</span>
+<span class="prop">place-content</span>: <span class="val">center</span>;
+<span class="prop">place-content</span>: <span class="val">space-between center</span>;</pre></div>
+    </section>
+
+    <!-- 09 GRID-AUTO-FLOW -->
+    <section class="section" id="auto-flow">
+      <div class="section-num">09 / Property</div>
+      <h2>grid-auto-flow</h2>
+      <p>Controls how the browser <strong>automatically places items</strong> that don't have an explicit position. Items are placed row by row by default, filling each row before moving to the next.</p>
+
+      <div class="demo-grid">
+        <div class="demo-card">
+          <div class="demo-label">
+            <span>Default — fills row by row</span>
+            <code>grid-auto-flow: row</code>
+          </div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: repeat(3,1fr); grid-auto-flow: row; gap: 0.6rem;">
+              <div class="b b1">1</div>
+              <div class="b b2">2</div>
+              <div class="b b3">3</div>
+              <div class="b b4">4</div>
+              <div class="b b5">5</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label">
+            <span>Fills column by column</span>
+            <code>grid-auto-flow: column</code>
+          </div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(2, 60px); grid-auto-flow: column; gap: 0.6rem;">
+              <div class="b b1">1</div>
+              <div class="b b2">2</div>
+              <div class="b b3">3</div>
+              <div class="b b4">4</div>
+              <div class="b b5">5</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label">
+            <span>Fills gaps left by spanning items</span>
+            <code>grid-auto-flow: dense</code>
+          </div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: repeat(3,1fr); grid-auto-flow: dense; gap: 0.6rem;">
+              <div class="b b1" style="grid-column: span 2;">span 2</div>
+              <div class="b b2">2</div>
+              <div class="b b3">3</div>
+              <div class="b b4" style="grid-column: span 2;">span 2</div>
+              <div class="b b5">5</div>
+              <div class="b b6">6</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block"><pre>
+<span class="prop">grid-auto-flow</span>: <span class="val">row</span>;          <span class="cmt">/* fills left→right, row by row (default) */</span>
+<span class="prop">grid-auto-flow</span>: <span class="val">column</span>;       <span class="cmt">/* fills top→bottom, column by column     */</span>
+<span class="prop">grid-auto-flow</span>: <span class="val">dense</span>;        <span class="cmt">/* backfills gaps left by spanning items  */</span>
+<span class="prop">grid-auto-flow</span>: <span class="val">row dense</span>;    <span class="cmt">/* row direction + dense packing          */</span>
+<span class="prop">grid-auto-flow</span>: <span class="val">column dense</span>; <span class="cmt">/* column direction + dense packing       */</span>
+
+<span class="cmt">/* grid-auto-rows / grid-auto-columns — size implicit tracks */</span>
+<span class="prop">grid-auto-rows</span>:    <span class="val">100px</span>;      <span class="cmt">/* implicitly created rows = 100px tall   */</span>
+<span class="prop">grid-auto-columns</span>: <span class="val">1fr</span>;        <span class="cmt">/* implicitly created columns = 1fr wide  */</span></pre></div>
+    </section>
+
+    <!-- 10 repeat / fr / minmax -->
+    <section class="section" id="functions">
+      <div class="section-num">10 / Grid Functions & Units</div>
+      <h2>repeat() · fr · minmax()</h2>
+      <p>CSS Grid introduces powerful <strong>functions and units</strong> that make responsive layouts simple without any media queries. These are the true superpowers of Grid.</p>
+
+      <table class="prop-table">
+        <tr>
+          <th>Feature</th>
+          <th>What it does</th>
+          <th>Default</th>
+        </tr>
+        <tr>
+          <td>fr unit</td>
+          <td>Stands for "fraction of the available free space". Works like <code style="font-family:'JetBrains Mono',monospace;color:var(--accent3)">flex-grow</code>. <code style="font-family:'JetBrains Mono',monospace;color:var(--accent3)">1fr 2fr</code> = first column gets ⅓, second gets ⅔ of space.</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>repeat()</td>
+          <td>Shorthand to avoid repetition: <code style="font-family:'JetBrains Mono',monospace;color:var(--accent3)">repeat(4, 1fr)</code> = <code style="font-family:'JetBrains Mono',monospace;color:var(--accent3)">1fr 1fr 1fr 1fr</code>. Works with auto-fill and auto-fit for truly responsive grids.</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>minmax()</td>
+          <td>Sets a size range: <code style="font-family:'JetBrains Mono',monospace;color:var(--accent3)">minmax(200px, 1fr)</code> = minimum 200px, maximum 1fr. Used with auto-fill for responsive grids that need no media queries.</td>
+          <td>—</td>
+        </tr>
+      </table>
+
+      <div class="demo-grid" style="margin-top: 2rem;">
+        <div class="demo-card">
+          <div class="demo-label">
+            <span>4 equal columns</span>
+            <code>repeat(4, 1fr)</code>
+          </div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+              <div class="b b1">1fr</div>
+              <div class="b b2">1fr</div>
+              <div class="b b3">1fr</div>
+              <div class="b b4">1fr</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label">
+            <span>Min 120px, grow to fill</span>
+            <code>minmax(120px, 1fr)</code>
+          </div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: repeat(3, minmax(120px, 1fr)); gap: 0.5rem;">
+              <div class="b b5">≥120px</div>
+              <div class="b b6">≥120px</div>
+              <div class="b b1">≥120px</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label">
+            <span>Auto-fill: as many 140px cols as fit</span>
+            <code>repeat(auto-fill, 140px)</code>
+          </div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: repeat(auto-fill, 140px); gap: 0.5rem;">
+              <div class="b b2">A</div>
+              <div class="b b3">B</div>
+              <div class="b b4">C</div>
+              <div class="b b5">D</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-label">
+            <span>Responsive — zero media queries!</span>
+            <code>repeat(auto-fit, minmax(140px, 1fr))</code>
+          </div>
+          <div class="demo-visual">
+            <div class="grid-container" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.5rem;">
+              <div class="b b1">item</div>
+              <div class="b b2">item</div>
+              <div class="b b3">item</div>
+              <div class="b b4">item</div>
+              <div class="b b5">item</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block"><pre>
+<span class="cmt">/* fr unit — fraction of remaining free space */</span>
+<span class="prop">grid-template-columns</span>: <span class="val">1fr 1fr 1fr</span>;          <span class="cmt">/* 3 equal cols             */</span>
+<span class="prop">grid-template-columns</span>: <span class="val">1fr 2fr</span>;               <span class="cmt">/* 1/3 then 2/3             */</span>
+<span class="prop">grid-template-columns</span>: <span class="val">200px 1fr</span>;             <span class="cmt">/* fixed sidebar + flex main */</span>
+
+<span class="cmt">/* repeat() — shorthand for repeated values */</span>
+<span class="prop">grid-template-columns</span>: <span class="val">repeat(4, 1fr)</span>;        <span class="cmt">/* 4 equal cols             */</span>
+<span class="prop">grid-template-columns</span>: <span class="val">repeat(3, 100px 1fr)</span>; <span class="cmt">/* alternating pattern      */</span>
+
+<span class="cmt">/* minmax(min, max) — responsive sizing */</span>
+<span class="prop">grid-template-columns</span>: <span class="val">minmax(200px, 1fr)</span>;    <span class="cmt">/* min 200px, grow to 1fr   */</span>
+<span class="prop">grid-template-rows</span>:    <span class="val">minmax(100px, auto)</span>;   <span class="cmt">/* min 100px, grows w/ content */</span>
+
+<span class="cmt">/* The holy grail — fully responsive, no media queries */</span>
+<span class="prop">grid-template-columns</span>: <span class="val">repeat(auto-fit, minmax(240px, 1fr))</span>;
+<span class="cmt">/* auto-fill = create as many tracks as fit (may leave empty cols) */</span>
+<span class="cmt">/* auto-fit  = collapse empty tracks (items stretch to fill)       */</span></pre></div>
+    </section>
+
+    <!-- 11 CHEAT SHEET -->
+    <section class="section" id="cheatsheet">
+      <div class="section-num">11 / Reference</div>
+      <h2>Cheat Sheet</h2>
+      <p>Quick reference for every CSS Grid property.</p>
+
+      <div class="cheat-sheet">
+        <div class="cheat-group">
+          <h3>🏛️ Container Properties</h3>
+          <div class="cheat-row"><span class="cheat-prop">display: grid</span><span class="cheat-desc">Activate CSS Grid</span></div>
+          <div class="cheat-row"><span class="cheat-prop">grid-template-columns</span><span class="cheat-desc">Define column tracks</span></div>
+          <div class="cheat-row"><span class="cheat-prop">grid-template-rows</span><span class="cheat-desc">Define row tracks</span></div>
+          <div class="cheat-row"><span class="cheat-prop">grid-template-areas</span><span class="cheat-desc">Name grid regions</span></div>
+          <div class="cheat-row"><span class="cheat-prop">grid-template</span><span class="cheat-desc">Shorthand: rows / columns</span></div>
+          <div class="cheat-row"><span class="cheat-prop">gap</span><span class="cheat-desc">Space between grid cells</span></div>
+          <div class="cheat-row"><span class="cheat-prop">justify-items</span><span class="cheat-desc">Align items horizontally in cell</span></div>
+          <div class="cheat-row"><span class="cheat-prop">align-items</span><span class="cheat-desc">Align items vertically in cell</span></div>
+          <div class="cheat-row"><span class="cheat-prop">place-items</span><span class="cheat-desc">Shorthand: align-items + justify-items</span></div>
+          <div class="cheat-row"><span class="cheat-prop">justify-content</span><span class="cheat-desc">Align grid horizontally in container</span></div>
+          <div class="cheat-row"><span class="cheat-prop">align-content</span><span class="cheat-desc">Align grid vertically in container</span></div>
+          <div class="cheat-row"><span class="cheat-prop">place-content</span><span class="cheat-desc">Shorthand: align-content + justify-content</span></div>
+          <div class="cheat-row"><span class="cheat-prop">grid-auto-flow</span><span class="cheat-desc">row | column | dense</span></div>
+          <div class="cheat-row"><span class="cheat-prop">grid-auto-rows</span><span class="cheat-desc">Size of implicitly created rows</span></div>
+          <div class="cheat-row"><span class="cheat-prop">grid-auto-columns</span><span class="cheat-desc">Size of implicitly created columns</span></div>
+        </div>
+
+        <div class="cheat-group">
+          <h3>🧩 Item Properties</h3>
+          <div class="cheat-row"><span class="cheat-prop">grid-column</span><span class="cheat-desc">Horizontal placement (start / end)</span></div>
+          <div class="cheat-row"><span class="cheat-prop">grid-row</span><span class="cheat-desc">Vertical placement (start / end)</span></div>
+          <div class="cheat-row"><span class="cheat-prop">grid-area</span><span class="cheat-desc">Named area OR row/col shorthand</span></div>
+          <div class="cheat-row"><span class="cheat-prop">justify-self</span><span class="cheat-desc">Override justify-items for one item</span></div>
+          <div class="cheat-row"><span class="cheat-prop">align-self</span><span class="cheat-desc">Override align-items for one item</span></div>
+          <div class="cheat-row"><span class="cheat-prop">place-self</span><span class="cheat-desc">Shorthand: align-self + justify-self</span></div>
+        </div>
+
+        <div class="cheat-group">
+          <h3>⭐ Most Used Combos</h3>
+          <div class="cheat-row">
+            <span class="cheat-prop" style="min-width:0;margin-right:0.5rem">Responsive cards</span>
+            <span class="cheat-desc" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--accent3)">grid-template-columns:<br>repeat(auto-fit, minmax(240px, 1fr));</span>
+          </div>
+          <div class="cheat-row">
+            <span class="cheat-prop" style="min-width:0;margin-right:0.5rem">Page layout</span>
+            <span class="cheat-desc" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--accent3)">grid-template-areas:<br>"header header"<br>"sidebar main"<br>"footer footer";</span>
+          </div>
+          <div class="cheat-row">
+            <span class="cheat-prop" style="min-width:0;margin-right:0.5rem">Perfect center</span>
+            <span class="cheat-desc" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--accent3)">display: grid;<br>place-items: center;</span>
+          </div>
+          <div class="cheat-row">
+            <span class="cheat-prop" style="min-width:0;margin-right:0.5rem">Full-width item</span>
+            <span class="cheat-desc" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--accent3)">.item { grid-column: 1 / -1; }</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <p>CSS Grid Complete Guide · Built with <span>♥</span> By <a href="https://www.github.com/BilalBahij-dev" style="color: white;"><strong>Bilal Ahmad Bahij</strong></a> · All examples are live CSS demos</p>
+  </footer>
+
+  <!-- =============================================
+       SCROLL ANIMATION
+  ============================================= -->
+  <script>
+    const sections = document.querySelectorAll('.section');
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      },
+      { threshold: 0.08 }
+    );
+
+    sections.forEach((s) => observer.observe(s));
+  </script>
+</body>
+</html>
